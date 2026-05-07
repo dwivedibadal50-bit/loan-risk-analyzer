@@ -273,10 +273,17 @@ st.markdown(
 
 MODEL_PATH = "model.pkl"
 
+MODEL_PATH = "model.pkl"
+
+# Auto-create model.pkl if missing
 if not os.path.exists(MODEL_PATH):
 
-    st.error("❌ model.pkl file not found")
-    st.stop()
+    st.warning("⚠ Model not found. Training model...")
+
+    import subprocess
+    subprocess.run(["python", "train_model.py"])
+
+    st.success("✅ model.pkl created successfully")
 
 try:
 
