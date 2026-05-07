@@ -13,7 +13,7 @@ from sklearn.metrics import accuracy_score
 # =========================================
 
 df = pd.read_csv(
-    r"C:\Loan_Risk_Project\loan_data.csv"
+    "loan_data.csv"
 )
 
 print("✅ Dataset Loaded")
@@ -304,7 +304,7 @@ joblib.dump(
 
     pipeline,
 
-    r"C:\Loan_Risk_Project\model.pkl"
+    "model.pkl"
 )
 
 print("\n✅ model.pkl Saved Successfully")
