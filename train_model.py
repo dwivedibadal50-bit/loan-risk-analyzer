@@ -13,11 +13,33 @@ from sklearn.metrics import accuracy_score
 # BASE DIRECTORY
 # =========================================
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)
 
-DATA_PATH = os.path.join(BASE_DIR, "loan_data.csv")
+# =========================================
+# FILE PATHS
+# =========================================
 
-MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
+DATA_PATH = os.path.join(
+    BASE_DIR,
+    "loan_data.csv"
+)
+
+MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "model.pkl"
+)
+
+# =========================================
+# CHECK DATASET
+# =========================================
+
+if not os.path.exists(DATA_PATH):
+
+    raise FileNotFoundError(
+        f"loan_data.csv not found at: {DATA_PATH}"
+    )
 
 # =========================================
 # LOAD DATA
@@ -134,17 +156,43 @@ df["payment_score"] = (
 
 )
 
+# SAFE COLUMNS
+
+num_deliq_6mts = (
+    df["num_deliq_6mts"]
+    if "num_deliq_6mts" in df.columns
+    else 0
+)
+
+num_deliq_12mts = (
+    df["num_deliq_12mts"]
+    if "num_deliq_12mts" in df.columns
+    else 0
+)
+
+enq_L3m = (
+    df["enq_L3m"]
+    if "enq_L3m" in df.columns
+    else 0
+)
+
+enq_L6m = (
+    df["enq_L6m"]
+    if "enq_L6m" in df.columns
+    else 0
+)
+
 df["delinq_score"] = (
 
     df["num_times_delinquent"]
 
     +
 
-    df["num_deliq_6mts"]
+    num_deliq_6mts
 
     +
 
-    df["num_deliq_12mts"]
+    num_deliq_12mts
 
 )
 
@@ -154,11 +202,11 @@ df["enquiry_score"] = (
 
     +
 
-    df["enq_L3m"]
+    enq_L3m
 
     +
 
-    df["enq_L6m"]
+    enq_L6m
 
 )
 
@@ -268,7 +316,7 @@ model = RandomForestClassifier(
 )
 
 # =========================================
-# TRAIN
+# TRAIN MODEL
 # =========================================
 
 model.fit(
@@ -314,4 +362,4 @@ joblib.dump(
     MODEL_PATH
 )
 
-print("\n✅ model.pkl Saved Successfully")
+print(f"\n✅ model.pkl saved at: {MODEL_PATH}")
