@@ -10,10 +10,10 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
 # =========================================
-# BASE DIRECTORY
+# FORCE ROOT DIRECTORY
 # =========================================
 
-BASE_DIR = os.path.dirname(
+ROOT_DIR = os.path.dirname(
     os.path.abspath(__file__)
 )
 
@@ -22,14 +22,22 @@ BASE_DIR = os.path.dirname(
 # =========================================
 
 DATA_PATH = os.path.join(
-    BASE_DIR,
+    ROOT_DIR,
     "loan_data.csv"
 )
 
 MODEL_PATH = os.path.join(
-    BASE_DIR,
+    ROOT_DIR,
     "model.pkl"
 )
+
+# =========================================
+# DEBUG PATHS
+# =========================================
+
+print("ROOT DIRECTORY:", ROOT_DIR)
+print("DATA PATH:", DATA_PATH)
+print("MODEL PATH:", MODEL_PATH)
 
 # =========================================
 # CHECK DATASET
@@ -155,8 +163,6 @@ df["payment_score"] = (
     df["num_times_60p_dpd"]
 
 )
-
-# SAFE COLUMNS
 
 num_deliq_6mts = (
     df["num_deliq_6mts"]
