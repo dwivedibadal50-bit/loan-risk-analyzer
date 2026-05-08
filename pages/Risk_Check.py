@@ -33,54 +33,28 @@ MODEL_PATH = os.path.join(
     "model.pkl"
 )
 
-TRAIN_PATH = os.path.join(
-    BASE_DIR,
-    "train_model.py"
-)
-
 # =========================================
-# LOAD / TRAIN MODEL
+# LOAD MODEL
 # =========================================
 
 try:
 
-    # DEBUG INFO
-
     st.write("BASE_DIR:", BASE_DIR)
+
     st.write("MODEL_PATH:", MODEL_PATH)
-    st.write("TRAIN_PATH:", TRAIN_PATH)
 
-    # TRAIN MODEL IF NOT EXISTS
-
-    if not os.path.exists(MODEL_PATH):
-
-        st.warning("⚠ Model not found. Training model...")
-
-        globals_dict = {
-
-            "__file__": TRAIN_PATH,
-            "__name__": "__main__"
-
-        }
-
-        with open(TRAIN_PATH, "r") as f:
-
-            code = compile(
-                f.read(),
-                TRAIN_PATH,
-                "exec"
-            )
-
-            exec(code, globals_dict)
-
-    # CHECK AGAIN
+    # CHECK MODEL EXISTS
 
     if not os.path.exists(MODEL_PATH):
 
-        st.error("❌ model.pkl was not created")
+        st.error(
+            "❌ model.pkl not found.\n\n"
+            "Run train_model.py locally first and upload model.pkl to GitHub."
+        )
+
         st.stop()
 
-    # LOAD MODEL
+    # LOAD PIPELINE
 
     pipeline = joblib.load(MODEL_PATH)
 
@@ -252,14 +226,20 @@ if predict_btn:
 
             input_df[col] = val
 
+    # HANDLE MISSING VALUES
+
     input_df = pd.DataFrame(
         imputer.transform(input_df),
         columns=input_df.columns
     )
 
+    # SCALE INPUT
+
     input_scaled = scaler.transform(
         input_df
     )
+
+    # PREDICT
 
     prediction_encoded = model.predict(
         input_scaled
