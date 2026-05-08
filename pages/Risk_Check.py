@@ -270,27 +270,22 @@ st.markdown(
 # =========================================
 # LOAD MODEL
 # =========================================
+# =========================================
+# LOAD / TRAIN MODEL
+# =========================================
 
 MODEL_PATH = "model.pkl"
 
-# Auto-create model.pkl if missing
 if not os.path.exists(MODEL_PATH):
 
     st.warning("⚠ Model not found. Training model...")
 
-    import subprocess
-    subprocess.run(["python", "train_model.py"])
+    import train_model
 
     st.success("✅ model.pkl created successfully")
 
-try:
-
-    pipeline = joblib.load(MODEL_PATH)
-
-except Exception as e:
-
-    st.error(f"❌ Error loading model: {e}")
-    st.stop()
+# LOAD MODEL
+pipeline = joblib.load(MODEL_PATH)
 
 model = pipeline["model"]
 scaler = pipeline["scaler"]
