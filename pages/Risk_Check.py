@@ -200,7 +200,7 @@ st.markdown(
 )
 
 # =========================================
-# MODEL PATH
+# BASE DIRECTORY
 # =========================================
 
 BASE_DIR = os.path.dirname(
@@ -222,9 +222,20 @@ try:
 
         st.warning("⚠ Model not found. Training model...")
 
-        import train_model
+        exec(
+            open(
+                os.path.join(BASE_DIR, "train_model.py")
+            ).read()
+        )
 
-        st.success("✅ model.pkl created successfully")
+        if os.path.exists(MODEL_PATH):
+
+            st.success("✅ model.pkl created successfully")
+
+        else:
+
+            st.error("❌ model.pkl was not created")
+            st.stop()
 
     pipeline = joblib.load(MODEL_PATH)
 
