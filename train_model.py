@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import joblib
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, RobustScaler
@@ -9,12 +10,20 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 
 # =========================================
+# BASE DIRECTORY
+# =========================================
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+DATA_PATH = os.path.join(BASE_DIR, "loan_data.csv")
+
+MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
+
+# =========================================
 # LOAD DATA
 # =========================================
 
-df = pd.read_csv(
-    "loan_data.csv"
-)
+df = pd.read_csv(DATA_PATH)
 
 print("✅ Dataset Loaded")
 
@@ -301,10 +310,8 @@ pipeline = {
 }
 
 joblib.dump(
-
     pipeline,
-
-    "model.pkl"
+    MODEL_PATH
 )
 
 print("\n✅ model.pkl Saved Successfully")
