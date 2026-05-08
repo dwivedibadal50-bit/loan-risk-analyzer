@@ -6,6 +6,7 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 plt.style.use("ggplot")
 
@@ -22,7 +23,16 @@ st.set_page_config(
 # LOAD DATA
 # =====================================
 
-df = pd.read_csv("loan_data.csv")
+BASE_DIR = os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))
+)
+
+DATA_PATH = os.path.join(
+    BASE_DIR,
+    "loan_data.csv"
+)
+
+df = pd.read_csv(DATA_PATH)
 
 # =====================================
 # ADVANCED FULL BLUE UI THEME
@@ -192,6 +202,125 @@ section[data-testid="stSidebar"] * {
 """, unsafe_allow_html=True)
 
 # =====================================
+# SIDEBAR FILTERS
+# =====================================
+
+st.sidebar.title("🎛 Dashboard Filters")
+
+filtered_df = df.copy()
+
+# =====================================
+# APPROVAL FILTER
+# =====================================
+
+if "Approved_Flag" in df.columns:
+
+    approval_options = st.sidebar.multiselect(
+        "Loan Category",
+        options=df["Approved_Flag"].unique(),
+        default=df["Approved_Flag"].unique()
+    )
+
+    filtered_df = filtered_df[
+        filtered_df["Approved_Flag"].isin(
+            approval_options
+        )
+    ]
+
+# =====================================
+# GENDER FILTER
+# =====================================
+
+gender_col = None
+
+possible_gender_cols = [
+    "GENDER",
+    "Gender",
+    "gender",
+    "SEX"
+]
+
+for col in possible_gender_cols:
+
+    if col in df.columns:
+        gender_col = col
+        break
+
+if gender_col:
+
+    gender_options = st.sidebar.multiselect(
+        "Gender",
+        options=df[gender_col].dropna().unique(),
+        default=df[gender_col].dropna().unique()
+    )
+
+    filtered_df = filtered_df[
+        filtered_df[gender_col].isin(
+            gender_options
+        )
+    ]
+
+# =====================================
+# INCOME FILTER
+# =====================================
+
+if "NETMONTHLYINCOME" in df.columns:
+
+    income_min = int(
+        filtered_df["NETMONTHLYINCOME"].min()
+    )
+
+    income_max = int(
+        filtered_df["NETMONTHLYINCOME"].max()
+    )
+
+    income_range = st.sidebar.slider(
+        "Monthly Income Range",
+        income_min,
+        income_max,
+        (income_min, income_max)
+    )
+
+    filtered_df = filtered_df[
+        (
+            filtered_df["NETMONTHLYINCOME"]
+            >= income_range[0]
+        )
+        &
+        (
+            filtered_df["NETMONTHLYINCOME"]
+            <= income_range[1]
+        )
+    ]
+
+# =====================================
+# AGE FILTER
+# =====================================
+
+if "AGE" in filtered_df.columns:
+
+    age_min = int(filtered_df["AGE"].min())
+
+    age_max = int(filtered_df["AGE"].max())
+
+    age_range = st.sidebar.slider(
+        "Age Range",
+        age_min,
+        age_max,
+        (age_min, age_max)
+    )
+
+    filtered_df = filtered_df[
+        (
+            filtered_df["AGE"] >= age_range[0]
+        )
+        &
+        (
+            filtered_df["AGE"] <= age_range[1]
+        )
+    ]
+
+# =====================================
 # TITLE
 # =====================================
 
@@ -208,23 +337,23 @@ Analyze loan approval trends, customer risk, delinquency behaviour, and financia
 
 st.subheader("📌 Portfolio KPIs")
 
-total_customers = df.shape[0]
+total_customers = filtered_df.shape[0]
 
 high_risk = (
-    (df["Approved_Flag"] == "P3") |
-    (df["Approved_Flag"] == "P4")
+    (filtered_df["Approved_Flag"] == "P3") |
+    (filtered_df["Approved_Flag"] == "P4")
 ).sum()
 
 low_risk = (
-    df["Approved_Flag"] == "P1"
+    filtered_df["Approved_Flag"] == "P1"
 ).sum()
 
 moderate_risk = (
-    df["Approved_Flag"] == "P2"
+    filtered_df["Approved_Flag"] == "P2"
 ).sum()
 
 avg_income = int(
-    df["NETMONTHLYINCOME"].mean()
+    filtered_df["NETMONTHLYINCOME"].mean()
 )
 
 risk_rate = round(
@@ -232,8 +361,8 @@ risk_rate = round(
     2
 )
 
-if "Credit_Score" in df.columns:
-    avg_credit = int(df["Credit_Score"].mean())
+if "Credit_Score" in filtered_df.columns:
+    avg_credit = int(filtered_df["Credit_Score"].mean())
 else:
     avg_credit = 0
 
@@ -270,13 +399,13 @@ with k6:
 with k7:
     st.metric(
         "❌ Avg Delinquency",
-        round(df["num_times_delinquent"].mean(), 2)
+        round(filtered_df["num_times_delinquent"].mean(), 2)
     )
 
 with k8:
     st.metric(
         "📋 Avg Enquiries",
-        round(df["tot_enq"].mean(), 2)
+        round(filtered_df["tot_enq"].mean(), 2)
     )
 
 # =====================================
@@ -285,7 +414,7 @@ with k8:
 
 st.subheader("📄 Dataset Preview")
 
-st.dataframe(df.head())
+st.dataframe(filtered_df.head())
 
 # =====================================
 # TARGET DISTRIBUTION
@@ -293,7 +422,7 @@ st.dataframe(df.head())
 
 st.subheader("📊 Loan Approval Categories")
 
-target_counts = df["Approved_Flag"].value_counts()
+target_counts = filtered_df["Approved_Flag"].value_counts()
 
 fig1, ax1 = plt.subplots(figsize=(8,5))
 
@@ -316,7 +445,7 @@ st.subheader("💰 Income Distribution")
 fig2, ax2 = plt.subplots(figsize=(8,5))
 
 ax2.hist(
-    df["NETMONTHLYINCOME"],
+    filtered_df["NETMONTHLYINCOME"],
     bins=30,
     color="#42a5f5",
     edgecolor="black"
@@ -335,7 +464,7 @@ st.subheader("❌ Delinquency Analysis")
 fig3, ax3 = plt.subplots(figsize=(8,5))
 
 ax3.hist(
-    df["num_times_delinquent"],
+    filtered_df["num_times_delinquent"],
     bins=20,
     color="#1565c0",
     edgecolor="black"
@@ -354,7 +483,7 @@ st.subheader("🔍 Credit Enquiry Analysis")
 fig4, ax4 = plt.subplots(figsize=(8,5))
 
 ax4.hist(
-    df["tot_enq"],
+    filtered_df["tot_enq"],
     bins=20,
     color="#0d47a1",
     edgecolor="black"
@@ -370,7 +499,7 @@ st.pyplot(fig4)
 
 st.subheader("🧹 Missing Values")
 
-missing = df.isnull().sum()
+missing = filtered_df.isnull().sum()
 
 missing = missing[missing > 0]
 
@@ -396,12 +525,12 @@ if avg_credit < 700 and avg_credit != 0:
         "📉 Average credit score is below optimal level."
     )
 
-if df["num_times_delinquent"].mean() > 1:
+if filtered_df["num_times_delinquent"].mean() > 1:
     insights.append(
         "❌ Delinquency trend increasing financial risk."
     )
 
-if df["tot_enq"].mean() > 3:
+if filtered_df["tot_enq"].mean() > 3:
     insights.append(
         "🔍 High enquiry behaviour observed."
     )
@@ -418,3 +547,21 @@ if len(insights) == 0:
 
 for i in insights:
     st.info(i)
+
+# =====================================
+# FOOTER
+# =====================================
+
+st.markdown("---")
+
+st.markdown("""
+<div style='text-align:center;
+padding:15px;
+font-size:16px;
+font-weight:600;
+color:#08306b;'>
+
+🏦 AI Loan Risk Analyzer | Banking Analytics Project 2026
+
+</div>
+""", unsafe_allow_html=True)
