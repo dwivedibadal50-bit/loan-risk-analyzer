@@ -21,7 +21,7 @@ st.title("🏦 AI Loan Risk Prediction System")
 st.markdown("### Smart Banking Risk Analytics Dashboard")
 
 # =========================================
-# BASE DIRECTORY
+# ROOT DIRECTORY
 # =========================================
 
 BASE_DIR = os.path.dirname(
@@ -33,29 +33,46 @@ MODEL_PATH = os.path.join(
     "model.pkl"
 )
 
+TRAIN_PATH = os.path.join(
+    BASE_DIR,
+    "train_model.py"
+)
+
 # =========================================
 # LOAD / TRAIN MODEL
 # =========================================
 
 try:
 
+    # DEBUG INFO
+    st.write("BASE_DIR:", BASE_DIR)
+    st.write("MODEL_PATH:", MODEL_PATH)
+    st.write("TRAIN_PATH:", TRAIN_PATH)
+
     if not os.path.exists(MODEL_PATH):
 
         st.warning("⚠ Model not found. Training model...")
 
-        # IMPORTANT FIX
-        os.chdir(BASE_DIR)
+        # RUN train_model.py CORRECTLY
 
-        exec(
-            open(
-                os.path.join(BASE_DIR, "train_model.py")
-            ).read()
-        )
+        with open(TRAIN_PATH, "r") as f:
+
+            code = compile(
+                f.read(),
+                TRAIN_PATH,
+                "exec"
+            )
+
+            exec(code)
+
+    # CHECK AGAIN
 
     if not os.path.exists(MODEL_PATH):
 
         st.error("❌ model.pkl was not created")
         st.stop()
+
+    # LOAD MODEL
 
     pipeline = joblib.load(MODEL_PATH)
 
@@ -70,6 +87,7 @@ try:
 except Exception as e:
 
     st.error(f"❌ Error loading model: {e}")
+
     st.stop()
 
 # =========================================
