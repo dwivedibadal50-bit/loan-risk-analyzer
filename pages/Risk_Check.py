@@ -232,8 +232,6 @@ try:
 
     target_encoder = pipeline["target_encoder"]
 
-    st.success("✅ Model Loaded Successfully")
-
 except Exception as e:
 
     st.error(f"❌ Error loading model: {e}")
@@ -241,24 +239,56 @@ except Exception as e:
     st.stop()
 
 # =========================================
-# KPI SECTION
+# PROJECT INFO CARD
 # =========================================
 
-k1, k2, k3, k4 = st.columns(4)
+st.markdown("""
 
-with k1:
-    st.metric("Model Accuracy", "67%")
+<div style="
+background: linear-gradient(135deg,#ffffff,#dbeafe);
+padding:25px;
+border-radius:22px;
+border:2px solid #93c5fd;
+box-shadow:0 6px 18px rgba(0,0,0,0.08);
+margin-bottom:25px;
+">
 
-with k2:
-    st.metric("Precision", "72%")
+<h3 style="
+color:#0b5394;
+margin-top:0;
+">
+📌 AI Banking Risk Intelligence
+</h3>
 
-with k3:
-    st.metric("Recall", "67%")
+<p style="
+font-size:17px;
+color:#334155;
+line-height:1.7;
+">
 
-with k4:
-    st.metric("F1 Score", "69%")
+This AI-powered loan risk analyzer helps banks identify
+high-risk applicants before loan approval using customer
+credit behavior, delinquency history, payment patterns,
+income stability, and trade-line analytics.
 
-st.markdown("---")
+</p>
+
+<p style="
+font-size:16px;
+font-weight:600;
+color:#0f172a;
+">
+
+✅ P1 → Low Risk &nbsp;&nbsp;&nbsp;
+🟢 P2 → Moderate Risk &nbsp;&nbsp;&nbsp;
+🟠 P3 → High Risk &nbsp;&nbsp;&nbsp;
+🔴 P4 → Very High Risk
+
+</p>
+
+</div>
+
+""", unsafe_allow_html=True)
 
 # =========================================
 # INPUT SECTION
