@@ -1,7 +1,3 @@
-# =========================================
-# PAGE: Risk_Check.py
-# =========================================
-
 import streamlit as st
 import pandas as pd
 import joblib
@@ -18,202 +14,24 @@ st.set_page_config(
 )
 
 # =========================================
-# ADVANCED FULL BLUE THEME
-# =========================================
-
-st.markdown(
-    """
-    <style>
-
-    html, body, [class*="css"] {
-        background-color: #dceeff !important;
-    }
-
-    .stApp {
-        background: linear-gradient(
-            180deg,
-            #dceeff 0%,
-            #cfe7ff 40%,
-            #b9dbff 100%
-        );
-        color: #0f172a;
-    }
-
-    .main .block-container {
-        background: rgba(255,255,255,0.18);
-        padding: 2rem;
-        border-radius: 28px;
-        border: 2px solid #90c2ff;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-        margin-top: 12px;
-    }
-
-    h1 {
-        color: #08306b !important;
-        font-weight: 900 !important;
-        text-align: center;
-        letter-spacing: 1px;
-    }
-
-    h2, h3, h4 {
-        color: #0b5394 !important;
-        font-weight: 800 !important;
-    }
-
-    section[data-testid="stSidebar"] {
-        background: linear-gradient(
-            180deg,
-            #dbeafe,
-            #93c5fd
-        );
-        border-right: 3px solid #60a5fa;
-    }
-
-    section[data-testid="stSidebar"] * {
-        color: #08306b !important;
-        font-weight: 600;
-    }
-
-    .stNumberInput {
-        background: white;
-        border-radius: 16px;
-        padding: 8px;
-        border: 2px solid #93c5fd;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    }
-
-    label {
-        color: #0b3d91 !important;
-        font-weight: 700 !important;
-    }
-
-    .streamlit-expanderHeader {
-        background: #dbeafe !important;
-        border-radius: 12px;
-        border: 1px solid #93c5fd;
-        font-weight: 700;
-    }
-
-    .stButton>button {
-        background: linear-gradient(
-            135deg,
-            #1976d2,
-            #64b5f6
-        );
-        color: white;
-        border-radius: 16px;
-        border: none;
-        padding: 14px 28px;
-        font-weight: bold;
-        font-size: 17px;
-        transition: 0.3s;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-    }
-
-    .stButton>button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.18);
-    }
-
-    [data-testid="metric-container"] {
-        background: linear-gradient(
-            135deg,
-            #ffffff,
-            #d6ebff
-        );
-        border: 2px solid #5aa9ff;
-        padding: 22px;
-        border-radius: 20px;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.10);
-        transition: all 0.3s ease-in-out;
-    }
-
-    [data-testid="metric-container"]:hover {
-        transform: translateY(-5px);
-        border: 2px solid #1976d2;
-        box-shadow: 0 12px 22px rgba(0,0,0,0.16);
-    }
-
-    [data-testid="metric-container"] label {
-        color: #0b3d91 !important;
-        font-size: 16px !important;
-        font-weight: 800 !important;
-    }
-
-    [data-testid="metric-container"] div {
-        color: #002b5b !important;
-        font-size: 30px !important;
-        font-weight: 900 !important;
-    }
-
-    .stAlert {
-        border-radius: 18px !important;
-        border: 2px solid #90caf9 !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-    }
-
-    .stSuccess {
-        background: #d4edda !important;
-    }
-
-    .stInfo {
-        background: #dbeafe !important;
-    }
-
-    .stWarning {
-        background: #fff3cd !important;
-    }
-
-    .stError {
-        background: #ffe5e5 !important;
-    }
-
-    hr {
-        border: 1px solid #64b5f6;
-    }
-
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# =========================================
 # HEADER
 # =========================================
 
-st.markdown(
-    """
-    <h1>🏦 AI Loan Risk Prediction System</h1>
-
-    <p style='text-align:center;
-              color:#334155;
-              font-size:18px;
-              font-weight:600;'>
-
-    Smart Banking Risk Analytics Dashboard
-
-    </p>
-
-    <hr>
-    """,
-    unsafe_allow_html=True
-)
+st.title("🏦 AI Loan Risk Prediction System")
+st.markdown("### Smart Banking Risk Analytics Dashboard")
 
 # =========================================
-# BASE DIRECTORY
+# PATHS
 # =========================================
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))
 )
 
-MODEL_PATH = os.path.join(
-    BASE_DIR,
-    "model.pkl"
-)
+MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
 
 # =========================================
-# LOAD / TRAIN MODEL
+# LOAD MODEL
 # =========================================
 
 try:
@@ -228,15 +46,6 @@ try:
             ).read()
         )
 
-        if os.path.exists(MODEL_PATH):
-
-            st.success("✅ model.pkl created successfully")
-
-        else:
-
-            st.error("❌ model.pkl was not created")
-            st.stop()
-
     pipeline = joblib.load(MODEL_PATH)
 
     model = pipeline["model"]
@@ -245,9 +54,11 @@ try:
     selected_columns = pipeline["selected_columns"]
     target_encoder = pipeline["target_encoder"]
 
+    st.success("✅ Model Loaded Successfully")
+
 except Exception as e:
 
-    st.error(f"❌ Error loading model: {str(e)}")
+    st.error(f"❌ Error loading model: {e}")
     st.stop()
 
 # =========================================
@@ -331,9 +142,103 @@ with st.expander("⚙ Additional Optional Information"):
         0
     )
 
-st.markdown("<br>", unsafe_allow_html=True)
+# =========================================
+# PREDICT BUTTON
+# =========================================
 
 predict_btn = st.button(
     "🔍 Analyze Customer Risk",
     use_container_width=True
 )
+
+# =========================================
+# PREDICTION
+# =========================================
+
+if predict_btn:
+
+    input_df = pd.DataFrame(columns=selected_columns)
+
+    input_df.loc[0] = 0
+
+    values = {
+
+        "AGE": AGE,
+        "NETMONTHLYINCOME": NETMONTHLYINCOME,
+        "Total_TL": Total_TL,
+        "Tot_Active_TL": Tot_Active_TL,
+        "Time_With_Curr_Empr": Time_With_Curr_Empr,
+        "Tot_Missed_Pmnt": Tot_Missed_Pmnt,
+        "num_times_delinquent": num_times_delinquent,
+        "tot_enq": tot_enq,
+        "num_times_30p_dpd": num_times_30p_dpd,
+        "num_times_60p_dpd": num_times_60p_dpd,
+
+        "payment_score": (
+            Tot_Missed_Pmnt +
+            num_times_30p_dpd +
+            num_times_60p_dpd
+        ),
+
+        "delinq_score": (
+            num_times_delinquent
+        ),
+
+        "enquiry_score": (
+            tot_enq
+        )
+    }
+
+    for col, val in values.items():
+
+        if col in input_df.columns:
+
+            input_df[col] = val
+
+    input_df = pd.DataFrame(
+        imputer.transform(input_df),
+        columns=input_df.columns
+    )
+
+    input_scaled = scaler.transform(input_df)
+
+    prediction_encoded = model.predict(input_scaled)[0]
+
+    prediction = target_encoder.inverse_transform(
+        [prediction_encoded]
+    )[0]
+
+    probabilities = model.predict_proba(
+        input_scaled
+    )[0]
+
+    confidence = max(probabilities) * 100
+
+    # =========================================
+    # RESULTS
+    # =========================================
+
+    st.markdown("---")
+
+    st.subheader("📊 Risk Analysis Result")
+
+    if prediction == "P1":
+
+        st.success("✅ P1 - Low Risk Customer")
+
+    elif prediction == "P2":
+
+        st.info("🟢 P2 - Moderate Risk Customer")
+
+    elif prediction == "P3":
+
+        st.warning("🟠 P3 - High Risk Customer")
+
+    else:
+
+        st.error("🔴 P4 - Very High Risk Customer")
+
+    st.metric(
+        "Prediction Confidence",
+        f"{confidence:.2f}%"
+    )
