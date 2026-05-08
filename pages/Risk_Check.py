@@ -21,17 +21,20 @@ st.title("🏦 AI Loan Risk Prediction System")
 st.markdown("### Smart Banking Risk Analytics Dashboard")
 
 # =========================================
-# PATHS
+# BASE DIRECTORY
 # =========================================
 
 BASE_DIR = os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))
 )
 
-MODEL_PATH = os.path.join(BASE_DIR, "model.pkl")
+MODEL_PATH = os.path.join(
+    BASE_DIR,
+    "model.pkl"
+)
 
 # =========================================
-# LOAD MODEL
+# LOAD / TRAIN MODEL
 # =========================================
 
 try:
@@ -40,11 +43,19 @@ try:
 
         st.warning("⚠ Model not found. Training model...")
 
+        # IMPORTANT FIX
+        os.chdir(BASE_DIR)
+
         exec(
             open(
                 os.path.join(BASE_DIR, "train_model.py")
             ).read()
         )
+
+    if not os.path.exists(MODEL_PATH):
+
+        st.error("❌ model.pkl was not created")
+        st.stop()
 
     pipeline = joblib.load(MODEL_PATH)
 
@@ -71,7 +82,12 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
 
-    AGE = st.number_input("Age", 18, 100, 30)
+    AGE = st.number_input(
+        "Age",
+        18,
+        100,
+        30
+    )
 
     NETMONTHLYINCOME = st.number_input(
         "Monthly Income",
@@ -157,21 +173,32 @@ predict_btn = st.button(
 
 if predict_btn:
 
-    input_df = pd.DataFrame(columns=selected_columns)
+    input_df = pd.DataFrame(
+        columns=selected_columns
+    )
 
     input_df.loc[0] = 0
 
     values = {
 
         "AGE": AGE,
+
         "NETMONTHLYINCOME": NETMONTHLYINCOME,
+
         "Total_TL": Total_TL,
+
         "Tot_Active_TL": Tot_Active_TL,
+
         "Time_With_Curr_Empr": Time_With_Curr_Empr,
+
         "Tot_Missed_Pmnt": Tot_Missed_Pmnt,
+
         "num_times_delinquent": num_times_delinquent,
+
         "tot_enq": tot_enq,
+
         "num_times_30p_dpd": num_times_30p_dpd,
+
         "num_times_60p_dpd": num_times_60p_dpd,
 
         "payment_score": (
@@ -200,9 +227,13 @@ if predict_btn:
         columns=input_df.columns
     )
 
-    input_scaled = scaler.transform(input_df)
+    input_scaled = scaler.transform(
+        input_df
+    )
 
-    prediction_encoded = model.predict(input_scaled)[0]
+    prediction_encoded = model.predict(
+        input_scaled
+    )[0]
 
     prediction = target_encoder.inverse_transform(
         [prediction_encoded]
@@ -224,19 +255,27 @@ if predict_btn:
 
     if prediction == "P1":
 
-        st.success("✅ P1 - Low Risk Customer")
+        st.success(
+            "✅ P1 - Low Risk Customer"
+        )
 
     elif prediction == "P2":
 
-        st.info("🟢 P2 - Moderate Risk Customer")
+        st.info(
+            "🟢 P2 - Moderate Risk Customer"
+        )
 
     elif prediction == "P3":
 
-        st.warning("🟠 P3 - High Risk Customer")
+        st.warning(
+            "🟠 P3 - High Risk Customer"
+        )
 
     else:
 
-        st.error("🔴 P4 - Very High Risk Customer")
+        st.error(
+            "🔴 P4 - Very High Risk Customer"
+        )
 
     st.metric(
         "Prediction Confidence",
