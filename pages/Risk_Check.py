@@ -45,15 +45,23 @@ TRAIN_PATH = os.path.join(
 try:
 
     # DEBUG INFO
+
     st.write("BASE_DIR:", BASE_DIR)
     st.write("MODEL_PATH:", MODEL_PATH)
     st.write("TRAIN_PATH:", TRAIN_PATH)
+
+    # TRAIN MODEL IF NOT EXISTS
 
     if not os.path.exists(MODEL_PATH):
 
         st.warning("⚠ Model not found. Training model...")
 
-        # RUN train_model.py CORRECTLY
+        globals_dict = {
+
+            "__file__": TRAIN_PATH,
+            "__name__": "__main__"
+
+        }
 
         with open(TRAIN_PATH, "r") as f:
 
@@ -63,7 +71,7 @@ try:
                 "exec"
             )
 
-            exec(code)
+            exec(code, globals_dict)
 
     # CHECK AGAIN
 
@@ -77,9 +85,13 @@ try:
     pipeline = joblib.load(MODEL_PATH)
 
     model = pipeline["model"]
+
     scaler = pipeline["scaler"]
+
     imputer = pipeline["imputer"]
+
     selected_columns = pipeline["selected_columns"]
+
     target_encoder = pipeline["target_encoder"]
 
     st.success("✅ Model Loaded Successfully")
