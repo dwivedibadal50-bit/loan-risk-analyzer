@@ -341,7 +341,7 @@ Smart Banking Risk Analytics & Loan Approval Prediction System
 </div>
 """, unsafe_allow_html=True)
 
-st.success("✅ Application Running Successfully")
+
 
 # =========================================
 # MODEL PERFORMANCE
