@@ -18,11 +18,179 @@ st.set_page_config(
 )
 
 # =========================================
+# PROFESSIONAL BLUE THEME
+# =========================================
+
+st.markdown("""
+<style>
+
+html, body, [class*="css"] {
+    background-color: #dceeff !important;
+}
+
+.stApp {
+    background: linear-gradient(
+        180deg,
+        #dceeff 0%,
+        #cfe7ff 40%,
+        #b9dbff 100%
+    );
+}
+
+.main .block-container {
+
+    background: rgba(255,255,255,0.20);
+
+    padding: 2rem;
+
+    border-radius: 28px;
+
+    border: 2px solid #90c2ff;
+
+    box-shadow:
+        0 8px 30px rgba(0,0,0,0.08);
+
+    margin-top: 10px;
+}
+
+h1 {
+    color: #08306b !important;
+    font-weight: 900 !important;
+    text-align: center;
+}
+
+h2, h3, h4 {
+    color: #0b5394 !important;
+    font-weight: 800 !important;
+}
+
+section[data-testid="stSidebar"] {
+
+    background: linear-gradient(
+        180deg,
+        #dbeafe,
+        #93c5fd
+    );
+
+    border-right: 3px solid #60a5fa;
+}
+
+section[data-testid="stSidebar"] * {
+    color: #08306b !important;
+    font-weight: 700;
+}
+
+.stButton>button {
+
+    background: linear-gradient(
+        135deg,
+        #1976d2,
+        #64b5f6
+    );
+
+    color: white;
+
+    border-radius: 16px;
+
+    border: none;
+
+    padding: 14px 28px;
+
+    font-weight: bold;
+
+    font-size: 17px;
+
+    box-shadow:
+        0 5px 15px rgba(0,0,0,0.15);
+
+    transition: 0.3s;
+}
+
+.stButton>button:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 10px 20px rgba(0,0,0,0.18);
+}
+
+[data-testid="metric-container"] {
+
+    background: linear-gradient(
+        135deg,
+        #ffffff,
+        #d6ebff
+    );
+
+    border: 2px solid #5aa9ff;
+
+    padding: 22px;
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 6px 15px rgba(0,0,0,0.10);
+}
+
+.stNumberInput {
+
+    background: white;
+
+    border-radius: 16px;
+
+    padding: 8px;
+
+    border: 2px solid #93c5fd;
+}
+
+.streamlit-expanderHeader {
+
+    background: #dbeafe !important;
+
+    border-radius: 12px;
+
+    border: 1px solid #93c5fd;
+
+    font-weight: 700;
+}
+
+.stSuccess {
+    border-radius: 16px;
+}
+
+.stWarning {
+    border-radius: 16px;
+}
+
+.stError {
+    border-radius: 16px;
+}
+
+.stInfo {
+    border-radius: 16px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================
 # HEADER
 # =========================================
 
-st.title("🏦 AI Loan Risk Prediction System")
-st.markdown("### Smart Banking Risk Analytics Dashboard")
+st.markdown("""
+<h1>🏦 AI Loan Risk Prediction System</h1>
+
+<p style='
+text-align:center;
+font-size:20px;
+font-weight:600;
+color:#334155;
+'>
+Smart Banking Risk Analytics Dashboard
+</p>
+
+<hr>
+""", unsafe_allow_html=True)
 
 # =========================================
 # ROOT DIRECTORY
@@ -71,6 +239,26 @@ except Exception as e:
     st.error(f"❌ Error loading model: {e}")
 
     st.stop()
+
+# =========================================
+# KPI SECTION
+# =========================================
+
+k1, k2, k3, k4 = st.columns(4)
+
+with k1:
+    st.metric("Model Accuracy", "67%")
+
+with k2:
+    st.metric("Precision", "72%")
+
+with k3:
+    st.metric("Recall", "67%")
+
+with k4:
+    st.metric("F1 Score", "69%")
+
+st.markdown("---")
 
 # =========================================
 # INPUT SECTION
@@ -158,8 +346,10 @@ with st.expander("⚙ Additional Optional Information"):
         0
     )
 
+st.markdown("<br>", unsafe_allow_html=True)
+
 # =========================================
-# PREDICT BUTTON
+# BUTTON
 # =========================================
 
 predict_btn = st.button(
@@ -245,6 +435,24 @@ if predict_btn:
 
     confidence = max(probabilities) * 100
 
+    # =========================================
+    # RISK SCORE
+    # =========================================
+
+    risk_score = 100
+
+    risk_score -= Tot_Missed_Pmnt * 8
+    risk_score -= num_times_delinquent * 10
+    risk_score -= num_times_30p_dpd * 6
+    risk_score -= num_times_60p_dpd * 10
+    risk_score -= tot_enq * 2
+
+    risk_score = max(0, min(100, risk_score))
+
+    # =========================================
+    # RESULTS
+    # =========================================
+
     st.markdown("---")
 
     st.subheader("📊 Risk Analysis Result")
@@ -273,7 +481,110 @@ if predict_btn:
             "🔴 P4 - Very High Risk Customer"
         )
 
-    st.metric(
-        "Prediction Confidence",
-        f"{confidence:.2f}%"
-    )
+    m1, m2 = st.columns(2)
+
+    with m1:
+
+        st.metric(
+            "Prediction Confidence",
+            f"{confidence:.2f}%"
+        )
+
+    with m2:
+
+        st.metric(
+            "Risk Score",
+            f"{risk_score}/100"
+        )
+
+    # =========================================
+    # AI INSIGHTS
+    # =========================================
+
+    st.subheader("🧠 AI Insights")
+
+    insights = []
+
+    if Tot_Missed_Pmnt > 0:
+        insights.append(
+            "❌ Customer has missed payment history"
+        )
+
+    if num_times_delinquent > 0:
+        insights.append(
+            "⚠ Delinquency behavior detected"
+        )
+
+    if tot_enq > 5:
+        insights.append(
+            "⚠ High number of recent enquiries"
+        )
+
+    if NETMONTHLYINCOME > 80000:
+        insights.append(
+            "✅ Strong income profile"
+        )
+
+    if Tot_Active_TL >= 5:
+        insights.append(
+            "✅ Healthy trade line activity"
+        )
+
+    if len(insights) == 0:
+        insights.append(
+            "✅ Financial profile looks stable"
+        )
+
+    for item in insights:
+
+        st.info(item)
+
+    # =========================================
+    # BANK RECOMMENDATION
+    # =========================================
+
+    st.markdown("---")
+
+    st.subheader("🏦 Bank Recommendation")
+
+    if prediction == "P1":
+
+        st.success(
+            "Loan can be approved with low risk exposure."
+        )
+
+    elif prediction == "P2":
+
+        st.info(
+            "Loan can be approved with moderate monitoring."
+        )
+
+    elif prediction == "P3":
+
+        st.warning(
+            "Additional verification recommended before approval."
+        )
+
+    else:
+
+        st.error(
+            "Loan approval is highly risky."
+        )
+
+# =========================================
+# FOOTER
+# =========================================
+
+st.markdown("---")
+
+st.markdown("""
+<div style='text-align:center;
+padding:15px;
+font-size:16px;
+font-weight:600;
+color:#08306b;'>
+
+🏦 AI Loan Risk Analyzer | Banking Analytics Project 2026
+
+</div>
+""", unsafe_allow_html=True)
