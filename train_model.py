@@ -11,7 +11,18 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, RobustScaler
 from sklearn.impute import KNNImputer
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score
+
+from sklearn.metrics import (
+
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    roc_auc_score,
+    classification_report,
+    confusion_matrix
+
+)
 
 # =========================================
 # BASE DIRECTORY
@@ -85,9 +96,11 @@ print("✅ High Missing Columns Removed")
 remove_cols = [
 
     "PROSPECTID",
-    "Credit_Score",
+
     "pct_closed_tl",
+
     "pct_of_active_TLs_ever",
+
     "Age_Oldest_TL"
 
 ]
@@ -141,6 +154,16 @@ for col in cat_cols:
     )
 
 print("✅ Encoding Done")
+
+# =========================================
+# REDUCE CREDIT SCORE DOMINANCE
+# =========================================
+
+if "Credit_Score" in df.columns:
+
+    df["Credit_Score"] = (
+        df["Credit_Score"] / 100
+    )
 
 # =========================================
 # FEATURE ENGINEERING
@@ -219,6 +242,8 @@ print("✅ Feature Engineering Done")
 # =========================================
 
 selected_columns = [
+
+    "Credit_Score",
 
     "AGE",
 
@@ -306,15 +331,20 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 model = RandomForestClassifier(
 
-    n_estimators=30,
+    n_estimators=50,
 
-    max_depth=6,
+    max_depth=7,
 
-    min_samples_split=5,
+    min_samples_split=10,
 
-    class_weight="balanced",
+    min_samples_leaf=5,
+
+    max_features='sqrt',
+
+    class_weight="balanced_subsample",
 
     random_state=42
+
 )
 
 # =========================================
@@ -329,17 +359,123 @@ model.fit(
 print("✅ Model Trained")
 
 # =========================================
-# ACCURACY
+# PREDICTIONS
 # =========================================
 
 y_pred = model.predict(X_test)
+
+y_prob = model.predict_proba(X_test)
+
+# =========================================
+# ACCURACY
+# =========================================
 
 accuracy = accuracy_score(
     y_test,
     y_pred
 )
 
-print(f"\n🎯 Accuracy: {accuracy:.2%}")
+precision = precision_score(
+    y_test,
+    y_pred,
+    average='weighted'
+)
+
+recall = recall_score(
+    y_test,
+    y_pred,
+    average='weighted'
+)
+
+f1 = f1_score(
+    y_test,
+    y_pred,
+    average='weighted'
+)
+
+roc_auc = roc_auc_score(
+    y_test,
+    y_prob,
+    multi_class='ovr'
+)
+
+# =========================================
+# PRINT METRICS
+# =========================================
+
+print("\n====================================")
+print(" MODEL EVALUATION METRICS ")
+print("====================================")
+
+print(f"Accuracy  : {accuracy:.4f}")
+
+print(f"Precision : {precision:.4f}")
+
+print(f"Recall    : {recall:.4f}")
+
+print(f"F1 Score  : {f1:.4f}")
+
+print(f"ROC-AUC   : {roc_auc:.4f}")
+
+# =========================================
+# CLASSIFICATION REPORT
+# =========================================
+
+print("\n====================================")
+print(" CLASSIFICATION REPORT ")
+print("====================================\n")
+
+print(
+
+    classification_report(
+        y_test,
+        y_pred
+    )
+)
+
+# =========================================
+# CONFUSION MATRIX
+# =========================================
+
+print("\n====================================")
+print(" CONFUSION MATRIX ")
+print("====================================\n")
+
+print(
+
+    confusion_matrix(
+        y_test,
+        y_pred
+    )
+)
+
+# =========================================
+# FEATURE IMPORTANCE
+# =========================================
+
+importance = model.feature_importances_
+
+feature_importance = pd.DataFrame({
+
+    "Feature": selected_columns,
+
+    "Importance": importance
+
+})
+
+feature_importance = feature_importance.sort_values(
+
+    by="Importance",
+
+    ascending=False
+
+)
+
+print("\n====================================")
+print(" FEATURE IMPORTANCE ")
+print("====================================\n")
+
+print(feature_importance)
 
 # =========================================
 # SAVE PIPELINE
