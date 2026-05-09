@@ -28,9 +28,7 @@ from sklearn.metrics import (
 # BASE DIRECTORY
 # =========================================
 
-BASE_DIR = os.path.dirname(
-    os.path.abspath(__file__)
-)
+BASE_DIR = os.getcwd()
 
 # =========================================
 # FILE PATHS
@@ -62,7 +60,7 @@ if not os.path.exists(DATA_PATH):
 
 df = pd.read_csv(DATA_PATH)
 
-print("✅ Dataset Loaded")
+print("\n✅ Dataset Loaded Successfully")
 
 # =========================================
 # REMOVE DUPLICATES
@@ -70,8 +68,10 @@ print("✅ Dataset Loaded")
 
 df = df.drop_duplicates()
 
+print("✅ Duplicate Records Removed")
+
 # =========================================
-# DROP HIGH MISSING COLUMNS
+# REMOVE HIGH MISSING COLUMNS
 # =========================================
 
 missing_percent = (
@@ -79,7 +79,7 @@ missing_percent = (
 ) * 100
 
 drop_cols = missing_percent[
-    missing_percent > 40
+    missing_percent > 45
 ].index
 
 df.drop(
@@ -96,11 +96,8 @@ print("✅ High Missing Columns Removed")
 remove_cols = [
 
     "PROSPECTID",
-
     "pct_closed_tl",
-
     "pct_of_active_TLs_ever",
-
     "Age_Oldest_TL"
 
 ]
@@ -117,8 +114,10 @@ df.drop(
     inplace=True
 )
 
+print("✅ Unwanted Columns Removed")
+
 # =========================================
-# TARGET
+# TARGET VARIABLE
 # =========================================
 
 TARGET = "Approved_Flag"
@@ -134,7 +133,7 @@ df[TARGET] = target_encoder.fit_transform(
 )
 
 # =========================================
-# ENCODE CATEGORICAL
+# ENCODE CATEGORICAL COLUMNS
 # =========================================
 
 cat_cols = df.select_dtypes(
@@ -153,17 +152,7 @@ for col in cat_cols:
         df[col].astype(str)
     )
 
-print("✅ Encoding Done")
-
-# =========================================
-# REDUCE CREDIT SCORE DOMINANCE
-# =========================================
-
-if "Credit_Score" in df.columns:
-
-    df["Credit_Score"] = (
-        df["Credit_Score"] / 100
-    )
+print("✅ Categorical Encoding Completed")
 
 # =========================================
 # FEATURE ENGINEERING
@@ -183,41 +172,17 @@ df["payment_score"] = (
 
 )
 
-num_deliq_6mts = (
-    df["num_deliq_6mts"]
-    if "num_deliq_6mts" in df.columns
-    else 0
-)
-
-num_deliq_12mts = (
-    df["num_deliq_12mts"]
-    if "num_deliq_12mts" in df.columns
-    else 0
-)
-
-enq_L3m = (
-    df["enq_L3m"]
-    if "enq_L3m" in df.columns
-    else 0
-)
-
-enq_L6m = (
-    df["enq_L6m"]
-    if "enq_L6m" in df.columns
-    else 0
-)
-
 df["delinq_score"] = (
 
     df["num_times_delinquent"]
 
     +
 
-    num_deliq_6mts
+    df["num_deliq_6mts"]
 
     +
 
-    num_deliq_12mts
+    df["num_deliq_12mts"]
 
 )
 
@@ -227,15 +192,15 @@ df["enquiry_score"] = (
 
     +
 
-    enq_L3m
+    df["enq_L3m"]
 
     +
 
-    enq_L6m
+    df["enq_L6m"]
 
 )
 
-print("✅ Feature Engineering Done")
+print("✅ Feature Engineering Completed")
 
 # =========================================
 # IMPORTANT FEATURES
@@ -302,12 +267,14 @@ X = pd.DataFrame(
 print("✅ Missing Values Handled")
 
 # =========================================
-# SCALING
+# FEATURE SCALING
 # =========================================
 
 scaler = RobustScaler()
 
 X_scaled = scaler.fit_transform(X)
+
+print("✅ Feature Scaling Completed")
 
 # =========================================
 # TRAIN TEST SPLIT
@@ -325,26 +292,27 @@ X_train, X_test, y_train, y_test = train_test_split(
     stratify=y
 )
 
+print("✅ Train Test Split Completed")
+
 # =========================================
-# MODEL
+# RANDOM FOREST MODEL
 # =========================================
 
 model = RandomForestClassifier(
 
-    n_estimators=50,
+    n_estimators=80,
 
-    max_depth=7,
+    max_depth=10,
 
     min_samples_split=10,
 
-    min_samples_leaf=5,
+    min_samples_leaf=4,
 
-    max_features='sqrt',
+    max_features="sqrt",
 
-    class_weight="balanced_subsample",
+    class_weight="balanced",
 
     random_state=42
-
 )
 
 # =========================================
@@ -356,7 +324,7 @@ model.fit(
     y_train
 )
 
-print("✅ Model Trained")
+print("✅ Model Training Completed")
 
 # =========================================
 # PREDICTIONS
@@ -367,7 +335,7 @@ y_pred = model.predict(X_test)
 y_prob = model.predict_proba(X_test)
 
 # =========================================
-# ACCURACY
+# EVALUATION METRICS
 # =========================================
 
 accuracy = accuracy_score(
@@ -376,27 +344,35 @@ accuracy = accuracy_score(
 )
 
 precision = precision_score(
+
     y_test,
     y_pred,
-    average='weighted'
+
+    average="weighted"
 )
 
 recall = recall_score(
+
     y_test,
     y_pred,
-    average='weighted'
+
+    average="weighted"
 )
 
 f1 = f1_score(
+
     y_test,
     y_pred,
-    average='weighted'
+
+    average="weighted"
 )
 
 roc_auc = roc_auc_score(
+
     y_test,
     y_prob,
-    multi_class='ovr'
+
+    multi_class="ovr"
 )
 
 # =========================================
@@ -408,13 +384,9 @@ print(" MODEL EVALUATION METRICS ")
 print("====================================")
 
 print(f"Accuracy  : {accuracy:.4f}")
-
 print(f"Precision : {precision:.4f}")
-
 print(f"Recall    : {recall:.4f}")
-
 print(f"F1 Score  : {f1:.4f}")
-
 print(f"ROC-AUC   : {roc_auc:.4f}")
 
 # =========================================
@@ -453,29 +425,25 @@ print(
 # FEATURE IMPORTANCE
 # =========================================
 
-importance = model.feature_importances_
-
-feature_importance = pd.DataFrame({
+importance_df = pd.DataFrame({
 
     "Feature": selected_columns,
 
-    "Importance": importance
+    "Importance": model.feature_importances_
 
 })
 
-feature_importance = feature_importance.sort_values(
+importance_df = importance_df.sort_values(
 
     by="Importance",
-
     ascending=False
-
 )
 
 print("\n====================================")
 print(" FEATURE IMPORTANCE ")
 print("====================================\n")
 
-print(feature_importance)
+print(importance_df)
 
 # =========================================
 # SAVE PIPELINE
